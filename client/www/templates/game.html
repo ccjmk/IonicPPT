@@ -1,0 +1,22 @@
+<ion-view view-title="Game">
+  <ion-content ng-controller="GameCtrl">
+    <div class="row">
+    <div class="pf col col-50" ng-repeat="player in players">
+      <h1 class="pf-player">{{ player.name }}</h1>
+      <stars points="player.points"></stars>
+      <div class="pf-currentplay">
+        <i class="icon ion-{{player.selectElement}}"></i>
+      </div>
+    </div>
+  </div>
+    <div class="game-status">
+      <h2>Juga!</h2>
+    </div>
+    <progress max="1000" value="{{timeLeft}}"> </progress>
+      <div class="button-bar">
+        <button class="button icon-left ion-egg" ng-click="doPlay(1)" ng-disabled="buttonsDisabled">Piedra</button>
+        <button class="button icon-left ion-document" ng-click="doPlay(2)" ng-disabled="buttonsDisabled">Papel</button>
+        <button class="button icon-left ion-scissors" ng-click="doPlay(3)" ng-disabled="buttonsDisabled">Tijera</button>
+      </div>
+  </ion-content>
+</ion-view>
