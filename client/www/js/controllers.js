@@ -1,7 +1,8 @@
 angular.module('starter.controllers', [])
 
-.controller("HomeCtrl", function($scope, $timeout, $location){
+.controller("HomeCtrl", function($scope, $timeout, $location, HelloWorld,$log){
 
+  HelloWorld.helloWorld().then(function(resp){ $log.log(resp.data.msg)})
   var status = {
     ready: {
       loginButtonText: "Jugar!",
@@ -23,7 +24,8 @@ angular.module('starter.controllers', [])
   }
 })
 
-.controller('GameCtrl', function($scope, $timeout, $interval){
+.controller('GameCtrl', [ "$scope", "$timeout", "$interval", "socket", function($scope, $timeout, $interval,socket){
+
 
   var status = {
     choosing: {
@@ -55,6 +57,14 @@ angular.module('starter.controllers', [])
   $scope.players = [player1, player2];
   $scope.buttonsDisabled = false;
 
+  $scope.testSocket = function(){
+    //debugger;
+    socket.get("/helloWorld",function(data){
+      console.log(data);
+
+    })
+  }
+
   $scope.doPlay = function(e){
     alert(e);
   }
@@ -63,10 +73,8 @@ angular.module('starter.controllers', [])
     $scope.timeLeft += 1;
     //console.log($scope.timeLeft);
     $scope.timeLeft = $scope.timeLeft %1000;
-},16);
-
-
-})
+  },16);
+}])
 
 
 .directive('stars', function() {
