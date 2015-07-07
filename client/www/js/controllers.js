@@ -57,6 +57,16 @@ angular.module('starter.controllers', [])
   $scope.players = [player1, player2];
   $scope.buttonsDisabled = false;
 
+  socket.on("game", function(evt){
+    console.log(evt);
+
+  });
+
+  //hago request para que me subscriban a un juego
+  socket.post("/helloWorld/subscribeToGame", function(data){
+    console.log(data);
+  });
+
   $scope.testSocket = function(){
     //debugger;
     socket.get("/helloWorld",function(data){
