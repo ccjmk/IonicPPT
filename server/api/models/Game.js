@@ -7,16 +7,23 @@
 
 module.exports = {
 
+  STATUS: {
+    //Available States:
+
+    AWAITING_PLAYER: 0,
+    ROUND_STARTED: 1,
+    FINISHED: 2
+  },
+
   attributes: {
-    player1SocketId: { type : 'string'},
-    p1LastPlay:  { type : 'string'},
-    p1Wins: { type : 'integer'},
 
-    player2SocketId: { type : 'string', required: false},
-    p2LastPlay: { type : 'string'},
-    p2Wins: { type : 'integer'},
+    players: {
+      collection: 'player',
+      via: 'game'
+    },
 
-    status:  { type : 'string'}
+    status:  { type : 'integer' },
+    round: { type: 'integer' }
 
 
   /*  players: {
@@ -33,7 +40,7 @@ module.exports = {
  },
  joinGame: function(socketId){
   return Game.findOne({
-    where: {player2SocketId: null}
+    where: {status: Game.STATUS.AWAITING_PLAYER}
   }).then(function(g){
     if(g)
     {
@@ -49,7 +56,24 @@ module.exports = {
     {
       //create new game
       sails.log.info(socketId,"newGame socketId");
-      return Game.create({player1SocketId: socketId, player2SocketId: null});
+
+
+      return Game.create({
+        round: 0,
+        status: Game.STATUS.AWAITING_PLAYER
+      }).then(function(game){
+        return [game, Player.create({
+          socketId: socketId,
+          lastPlay: null,
+          wins: 0,
+          game: game.id
+        })];
+
+     }).spread(function(game, player){
+          game.players = [player];
+          return game;
+
+      });
     }
   });
 
