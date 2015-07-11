@@ -16,16 +16,14 @@ angular.module('starter.controllers', [])
 
   $scope.username = "";
   $scope.status = status["ready"];
+
   $scope.login = function(){
     $scope.status = status["waitingForOponent"];
-    $timeout(function(){
-      $location.path("game");
-    },2000);
+    $location.path("#game/" + $scope.username);
   }
 })
 
 .controller('GameCtrl', [ "$scope", "$timeout", "$interval", "socket", function($scope, $timeout, $interval,socket){
-
 
   var status = {
     choosing: {
@@ -59,7 +57,6 @@ angular.module('starter.controllers', [])
 
   socket.on("game", function(evt){
     console.log(evt);
-
   });
 
   //hago request para que me subscriban a un juego
@@ -69,7 +66,7 @@ angular.module('starter.controllers', [])
 
   $scope.testSocket = function(){
     //debugger;
-    socket.get("/helloWorld",function(data){
+    socket.get("/helloWorld",{username: "U" + Math.ceil(Math.random() * 1000) },function(data){
       console.log(data);
 
     })

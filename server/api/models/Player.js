@@ -11,6 +11,8 @@ module.exports = {
 
     socketId : { type: 'string' },
 
+    name: { type: 'string' },
+
     lastPlay : { type: 'string' },
 
     wins : { type: 'integer' },
