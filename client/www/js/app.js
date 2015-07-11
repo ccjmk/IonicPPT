@@ -35,7 +35,7 @@ angular.module('starter', ['ionic', 'starter.controllers', 'starter.services'])
   })
 
   .state('game', {
-    url: '/game/:username',
+    url: '/game',
     templateUrl: 'templates/game.html'
   })
 

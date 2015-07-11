@@ -16,7 +16,7 @@ module.exports = {
   },
   subscribeToGame: function(req, res) {
     if (!req.isSocket) return res.badRequest();
-    Game.joinGame(req.param("username"), sails.sockets.id(req.socket)).then(function(game){
+    Game.joinGame(req.param("name"), sails.sockets.id(req.socket)).then(function(game){
       sails.log.info(game);
       res.send(game);
       Game.subscribe(req.socket,game);

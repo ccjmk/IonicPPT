@@ -10,8 +10,9 @@ module.exports = {
         //Available States:
 
         AWAITING_PLAYER: 0,
-        ROUND_STARTED: 1,
-        FINISHED: 2
+        READY_TO_PLAY: 1,
+        ROUND_STARTED: 2,
+        FINISHED: 3
     },
 
     attributes: {
@@ -36,7 +37,7 @@ module.exports = {
             return updated[0];
         });
     },
-    joinGame: function(socketId, playerName) {
+    joinGame: function(playerName,socketId) {
         var findGamePromise = Game.findOne()
             .where({
                 status: Game.STATUS.AWAITING_PLAYER
@@ -45,43 +46,45 @@ module.exports = {
 
         var createGameIfNotPromise = findGamePromise.then(function(game) {
             if (game) {
-                return game;
+                sails.log.info("Existing game");
+                game.status = Game.STATUS.READY_TO_PLAY;
+                return Game.update(game.id,game).then(function(games){
+                  return games[0];
+                });
             }
-
+            sails.log.info("Creating new game");
             return Game.create({
                 round: 0,
-                status: Game.STATUS.AWAITING_PLAYER
+                status: Game.STATUS.AWAITING_PLAYER,
+                players: []
             });
         });
 
         var createPlayerPromise = createGameIfNotPromise.then(function(game) {
-            var playerPromise = Player.create({
+            sails.log.info("Creating player");
+            return Player.create({
                 socketId: socketId,
                 name: playerName,
                 lastPlay: null,
                 wins: 0,
-                game: g.id
+                game: game.id
             });
-            return Q.when(game, playerPromise);
         });
 
-        var gameWithPlayersPromise = createPlayerPromise(function(game, player) {
-
-            if (!game.players) {
-                game.players = [];
-            }
-
-            game.players.push(player);
-            Game.publishUpdate(game.id, game);
-
-            return game;
+        var gameWithPlayersPromise = createPlayerPromise.then(function(player) {
+            return Game.findOne().where({id:player.game}).populate("players");
         });
 
-        gameWithPlayersPromise.fail(function(e) {
-            sails.log.error(e);
+
+        var publishAndLogErrors = gameWithPlayersPromise.then(function(game){
+          Game.publishUpdate(game.id, game);
+          return game;
+        }).fail(function(e) {
+          sails.log.error(e);
+          return e;
         });
 
-        return gameWithPlayersPromise;
+        return publishAndLogErrors;
     }
 
     /*Cuando el 2do jugador entra en el juego, se manda un evento de comienzo
