@@ -25,8 +25,18 @@ angular.module('starter.controllers', [])
 .controller('GameCtrl', ["$scope", "$timeout", "$interval", "socket", "$log",
             function($scope, $timeout, $interval, socket, $log){
   //hago request para que me subscriban a un juego
-
+  var STATUS = {
+      //Available States:
+      AWAITING_PLAYER: 0,
+      READY_TO_PLAY: 1,
+      ROUND_STARTED: 2,
+      FINISHED: 3
+  };
   $scope.game = {};
+  $scope.enabled = false;
+  $scope.buttonsDisabled = function(){
+    return !$scope.enabled;
+  }
   $scope.username = "User" + Math.ceil(Math.random()*100);
 
   socket.post("/helloWorld/subscribeToGame",
@@ -37,9 +47,9 @@ angular.module('starter.controllers', [])
         $scope.game = data;
     });
   });
+
   // $scope.timeLeft = 0;
-  // $scope.players = [];
-  // $scope.buttonsDisabled = false;
+
 
 //Llamada al controller para entrar a un juego
 
@@ -53,7 +63,6 @@ angular.module('starter.controllers', [])
   });
 
   $scope.doPlay = function(e){
-
     if($scope.game && $scope.game.players)
     {
       for(var i=0;i<$scope.game.players.length;i++)
@@ -61,10 +70,16 @@ angular.module('starter.controllers', [])
         if($scope.game.players[i].name == $scope.username)
         {
           $scope.game.players[i].lastPlay = e;
-          //socket.post({id:$scope.game.id,lastPlay:$scope.lastPlay});
+          socket.post("/helloWorld/play", {
+            gameId: $scope.game.id,
+            playerId:$scope.game.players[i].id,
+            lastPlay:e
+          }, function(res){
+          //  res.data;
+          });
+
           return;
         }
-
       }
     }
   }

@@ -37,6 +37,29 @@ module.exports = {
             return updated[0];
         });
     },
+    findById: function(id)
+    {
+      return Game.findOne()
+      .where({
+        id: id
+      })
+      .populate("players");
+    },
+    play: function(gameId,playerId,lastPlay)
+    {
+      var updatePlayerPromise = Player.update(playerId,{lastPlay:lastPlay});
+
+      var loadGamePromise = updatePlayerPromise.then(function(){
+        return Game.findById(gameId);
+      });
+
+      var verifyGameStatePromise = loadGamePromise.then(function(game){
+      //RESOLVE GAME RESULT
+        return game;
+      });
+
+      return verifyGameStatePromise;
+    },
     joinGame: function(playerName,socketId) {
         var findGamePromise = Game.findOne()
             .where({
@@ -72,7 +95,7 @@ module.exports = {
         });
 
         var gameWithPlayersPromise = createPlayerPromise.then(function(player) {
-            return Game.findOne().where({id:player.game}).populate("players");
+            return Game.findById(player.game);
         });
 
 

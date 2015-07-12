@@ -14,9 +14,9 @@
     </div>
     <progress max="1000" value="{{timeLeft}}"> </progress>
       <div class="button-bar">
-        <button class="button icon-left ion-egg" ng-click="doPlay('ROCK')" ng-disabled="buttonsDisabled">Piedra</button>
-        <button class="button icon-left ion-document" ng-click="doPlay('PAPER')" ng-disabled="buttonsDisabled">Papel</button>
-        <button class="button icon-left ion-scissors" ng-click="doPlay('SCISSORS')" ng-disabled="buttonsDisabled">Tijera</button>
+        <button class="button icon-left ion-egg" ng-click="doPlay('ROCK')" ng-disabled="buttonsDisabled()">Piedra</button>
+        <button class="button icon-left ion-document" ng-click="doPlay('PAPER')" ng-disabled="buttonsDisabled()">Papel</button>
+        <button class="button icon-left ion-scissors" ng-click="doPlay('SCISSORS')" ng-disabled="buttonsDisabled()">Tijera</button>
       </div>
       <!-- directiva que invoca al metodo -->
   </ion-content>
