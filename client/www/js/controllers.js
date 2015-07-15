@@ -39,7 +39,7 @@ angular.module('starter.controllers', [])
   }
   $scope.username = "User" + Math.ceil(Math.random()*100);
 
-  socket.post("/helloWorld/subscribeToGame",
+  socket.post("/game/subscribeToGame",
     {name: $scope.username },
     function(data){
     $scope.$apply(function(){
@@ -70,7 +70,7 @@ angular.module('starter.controllers', [])
         if($scope.game.players[i].name == $scope.username)
         {
           $scope.game.players[i].lastPlay = e;
-          socket.post("/helloWorld/play", {
+          socket.post("/game/play", {
             gameId: $scope.game.id,
             playerId:$scope.game.players[i].id,
             lastPlay:e

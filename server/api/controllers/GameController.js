@@ -1,5 +1,5 @@
 /**
- * HelloWorldController
+ * GameController
  *
  * @description :: Server-side logic for managing helloworlds
  * @help        :: See http://links.sailsjs.org/docs/controllers
@@ -7,7 +7,7 @@
 
 module.exports = {
   /**
-   * `HelloWorldController.index()`
+   * `GameController.index()`
    */
   index: function (req, res) {
     return res.json({
@@ -20,7 +20,7 @@ module.exports = {
         gameId: req.param("gameId"),
         playerId: req.param("playerId"),
         lastPlay: req.param("lasPlay")
-      }).then(function(game){      
+      }).then(function(game){
         res.json({});
       }).fail(function(err){
         sails.log.error(err,"ERROR");

@@ -37,12 +37,10 @@ module.exports = {
             return updated[0];
         });
     },
-    findById: function(id)
+    findGameById: function(id)
     {
-      return Game.findOne()
-      .where({
-        id: id
-      })
+      sails.log.info("Finding By Id Game", id);
+      return Game.findOneById(id)
       .populate("players");
     },
     play: function(gameId,playerId,lastPlay)
@@ -50,7 +48,7 @@ module.exports = {
       var updatePlayerPromise = Player.update(playerId,{lastPlay:lastPlay});
 
       var loadGamePromise = updatePlayerPromise.then(function(){
-        return Game.findById(gameId);
+        return Game.findGameById(gameId);
       });
 
       var verifyGameStatePromise = loadGamePromise.then(function(game){
@@ -95,11 +93,12 @@ module.exports = {
         });
 
         var gameWithPlayersPromise = createPlayerPromise.then(function(player) {
-            return Game.findById(player.game);
+            return Game.findGameById(player.game);
         });
 
 
         var publishAndLogErrors = gameWithPlayersPromise.then(function(game){
+          sails.log.info("publishingUpdate", game);
           Game.publishUpdate(game.id, game);
           return game;
         }).fail(function(e) {
