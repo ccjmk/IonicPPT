@@ -2,40 +2,35 @@ angular.module('starter.controllers', [])
 
 .controller("HomeCtrl",["$scope", "$timeout", "$location", "HelloWorld","$log",
   function($scope, $timeout, $location, HelloWorld,$log){
-  HelloWorld.helloWorld().then(function(resp){ $log.log(resp.data.msg)})
-  var status = {
-    ready: {
-      loginButtonText: "Jugar!",
-      loginDisabled: false,
-    },
-    waitingForOponent: {
-      loginButtonText: "Esperando oponente",
-      loginDisabled: true
-    }
-  };
-
-  $scope.status = status["ready"];
-
   $scope.login = function(){
-    $scope.status = status["waitingForOponent"];
     $location.path("#game");
   }
 }])
 
-.controller('GameCtrl', ["$scope", "$timeout", "$interval", "socket", "$log",
-            function($scope, $timeout, $interval, socket, $log){
+.controller('GameCtrl', ["$scope", "$timeout", "$interval", "socket", "$log", "_",
+function($scope, $timeout, $interval, socket, $log, _){
   //hago request para que me subscriban a un juego
   var STATUS = {
       //Available States:
       AWAITING_PLAYER: 0,
       READY_TO_PLAY: 1,
-      ROUND_STARTED: 2,
+      AWAITING_RESULT: 2,
       FINISHED: 3
   };
   $scope.game = {};
-  $scope.enabled = false;
+
   $scope.buttonsDisabled = function(){
-    return !$scope.enabled;
+    switch($scope.game && $scope.game.status){
+      case STATUS.READY_TO_PLAY:
+        return false;
+        break;
+      case STATUS.AWAITING_RESULT:
+        var player = _.findWhere($scope.game.players, {name: $scope.username});
+        return player.currentPlay !== null;
+        break;
+      default:
+        return true;
+    }
   }
   $scope.username = "User" + Math.ceil(Math.random()*100);
 
@@ -65,24 +60,19 @@ angular.module('starter.controllers', [])
   $scope.doPlay = function(e){
     if($scope.game && $scope.game.players)
     {
-      for(var i=0;i<$scope.game.players.length;i++)
-      {
-        if($scope.game.players[i].name == $scope.username)
-        {
-          $scope.game.players[i].lastPlay = e;
-          socket.post("/game/play", {
-            gameId: $scope.game.id,
-            playerId:$scope.game.players[i].id,
-            lastPlay:e
-          }, function(res){
-          //  res.data;
-          });
-
-          return;
-        }
-      }
-    }
+      var player = _.findWhere($scope.game.players, {name: $scope.username});
+      player.currentPlay = e;
+      $scope.game.status = STATUS.AWAITING_PLAYER;
+      socket.post("/game/play", {
+          gameId: $scope.game.id,
+          playerId: player.id,
+          currentPlay: e
+        }, function(res){
+        //  res.data;
+      });
+      return;
   }
+}
   // $interval(function(){
   //   $scope.timeLeft += 1;
   //   //$log.log($scope.timeLeft);
@@ -101,6 +91,13 @@ angular.module('starter.controllers', [])
       return icons[value] || "";
   };
 })
+
+.filter('stringify', function(){
+  return function(value){
+      return JSON.stringify(value, null, '\t');
+  };
+})
+
 .directive('stars', function() {
   return {
     restrict: 'E',
@@ -115,22 +112,3 @@ angular.module('starter.controllers', [])
     templateUrl: '/templates/stars.html'
   };
 });
-//
-// .controller('DashCtrl', function($scope) {})
-//
-// .controller('ChatsCtrl', function($scope, Chats) {
-//   $scope.chats = Chats.all();
-//   $scope.remove = function(chat) {
-//     Chats.remove(chat);
-//   }
-// })
-//
-// .controller('ChatDetailCtrl', function($scope, $stateParams, Chats) {
-//   $scope.chat = Chats.get($stateParams.chatId);
-// })
-//
-// .controller('AccountCtrl', function($scope) {
-//   $scope.settings = {
-//     enableFriends: true
-//   };
-// });

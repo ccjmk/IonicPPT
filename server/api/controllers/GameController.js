@@ -16,11 +16,10 @@ module.exports = {
   },
   play: function(req,res)
   {
-      Game.play({
-        gameId: req.param("gameId"),
-        playerId: req.param("playerId"),
-        currentPlay: req.param("currentPlay")
-      }).then(function(game){
+      Game.play(req.param("gameId"),
+        req.param("playerId"),
+        req.param("currentPlay")
+      ).then(function(game){
         res.json({});
       }).fail(function(err){
         sails.log.error(err,"ERROR");

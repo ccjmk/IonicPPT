@@ -41,7 +41,10 @@ module.exports = {
     {
       sails.log.info("Finding By Id Game", id);
       return Game.findOneById(id)
-      .populate("players");
+      .populate("players").then(function(game){
+        sails.log.info("Game:",game);
+        return game;
+      });
     },
     isWinner: function(element, otherPlayerElement)
     {
@@ -59,19 +62,22 @@ module.exports = {
     },
     play: function(gameId,playerId,play)
     {
+      var Q = require('q');
       var updatePlayerPromise = Player.update(playerId,{currentPlay:play});
 
       var loadGamePromise = updatePlayerPromise.then(function(){
         return Game.findGameById(gameId);
       });
 
-      var verifyGameStatePromise = loadGamePromise.then(function(game){
-        if(game.status === Game.STATUS.READY_TO_PLAY)
+      var updateGameStatusPromise = loadGamePromise.then(function(game){
+        if(game.status == Game.STATUS.READY_TO_PLAY)
         {
           game.status = Game.STATUS.AWAITING_RESULT;
+          return [game];
         }
         else
         {
+
           game.status = Game.STATUS.READY_TO_PLAY;
           //Calculate Results
           _.forEach(game.players, function(player,i){
@@ -81,19 +87,30 @@ module.exports = {
           });
 
           //Clean Play
-          var updates = [];
+          var updates = [game];
           _.forEach(game.players, function(player){
             player.lastPlay = player.currentPlay;
             player.currentPlay = null;
             updates.push(Player.update(player.id,player));
           });
+          return Q.all(updates);
         }
-        //updates
-        Game.publishUpdate(game.id, game);
-        return game;
       });
 
-      return verifyGameStatePromise;
+      var updateGamePromise = updateGameStatusPromise.spread(function(game){
+        sails.log.info("game to update", game);
+        return Q.all([game, Game.update(game.id, game)]);
+      });
+
+      var publishUpdatePromise = updateGamePromise.spread(function(game){
+        Game.publishUpdate(game.id, game);
+        return game;
+      }).fail(function(e) {
+        sails.log.error(e);
+        return e;
+      });
+
+      return publishUpdatePromise;
     },
     joinGame: function(playerName,socketId) {
         var findGamePromise = Game.findOne()

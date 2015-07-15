@@ -2,6 +2,9 @@ angular.module('starter.services', [])
 .factory('socket', ['$rootScope', function ($rootScope) {
     return io.socket;
 }])
+.factory('_', ['$rootScope', function ($rootScope) {
+    return _;
+}])
 .factory('HelloWorld', function($http) {
   return {
     helloWorld: function(){

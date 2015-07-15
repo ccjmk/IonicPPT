@@ -1,16 +1,14 @@
 <ion-view view-title="Home">
   <ion-content ng-controller="HomeCtrl">
       <h2>Piedra, Papel o Tijera</h2>
-    
+
       <label class="item item-input">
         <input type="text"
           ng-model="username"
-          ng-disabled="status.loginDisabled"
           placeholder="Ingresá tu nombre">
       </label>
       <button class="button button-block button-positive"
         ng-click="login()"
-        ng-disabled="status.loginDisabled"
       >{{status.loginButtonText}}</button>
   </ion-content>
 </ion-view>
