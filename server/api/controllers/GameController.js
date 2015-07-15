@@ -19,7 +19,7 @@ module.exports = {
       Game.play({
         gameId: req.param("gameId"),
         playerId: req.param("playerId"),
-        lastPlay: req.param("lasPlay")
+        currentPlay: req.param("currentPlay")
       }).then(function(game){
         res.json({});
       }).fail(function(err){

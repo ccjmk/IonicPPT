@@ -11,7 +11,7 @@ module.exports = {
 
         AWAITING_PLAYER: 0,
         READY_TO_PLAY: 1,
-        ROUND_STARTED: 2,
+        AWAITING_RESULT: 2,
         FINISHED: 3
     },
 
@@ -43,16 +43,53 @@ module.exports = {
       return Game.findOneById(id)
       .populate("players");
     },
-    play: function(gameId,playerId,lastPlay)
+    isWinner: function(element, otherPlayerElement)
     {
-      var updatePlayerPromise = Player.update(playerId,{lastPlay:lastPlay});
+      if(element == otherPlayerElement)
+      {
+        return 0;
+      }
+      if((element == "ROCK" && otherPlayerElement == "SCISSORS")
+        || (element == "SCISSORS" && otherPlayerElement == "PAPER")
+        || (element == "PAPER" && otherPlayerElement == "ROCK"))
+      {
+        return 1;
+      }
+      return -1;
+    },
+    play: function(gameId,playerId,play)
+    {
+      var updatePlayerPromise = Player.update(playerId,{currentPlay:play});
 
       var loadGamePromise = updatePlayerPromise.then(function(){
         return Game.findGameById(gameId);
       });
 
       var verifyGameStatePromise = loadGamePromise.then(function(game){
-      //RESOLVE GAME RESULT
+        if(game.status === Game.STATUS.READY_TO_PLAY)
+        {
+          game.status = Game.STATUS.AWAITING_RESULT;
+        }
+        else
+        {
+          game.status = Game.STATUS.READY_TO_PLAY;
+          //Calculate Results
+          _.forEach(game.players, function(player,i){
+            player.lastResult = Game.isWinner(game.players[i].currentPlay,
+            game.players[(i+1)%2].currentPlay);
+            player.wins += player.lastResult == 1 ? 1 : 0;
+          });
+
+          //Clean Play
+          var updates = [];
+          _.forEach(game.players, function(player){
+            player.lastPlay = player.currentPlay;
+            player.currentPlay = null;
+            updates.push(Player.update(player.id,player));
+          });
+        }
+        //updates
+        Game.publishUpdate(game.id, game);
         return game;
       });
 
@@ -86,6 +123,7 @@ module.exports = {
             return Player.create({
                 socketId: socketId,
                 name: playerName,
+                currentPlay: null,
                 lastPlay: null,
                 wins: 0,
                 game: game.id

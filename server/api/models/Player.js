@@ -13,6 +13,8 @@ module.exports = {
 
     name: { type: 'string' },
 
+    currentPlay : { type: 'string'},
+    
     lastPlay : { type: 'string' },
 
     wins : { type: 'integer' },
